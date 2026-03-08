@@ -14,6 +14,7 @@ Complete one entry per bug. All six entries are required for full marks.
 
 i already sent you the ReadMe.MD - this is the documentation about what should we do,
 legacy_setup.sql - this is the sql code that need to import in supabase.      |
+
 | **Fix**        | Menambahkan RLS policy SELECT untuk role anon pada table shipments supaya dapat membaca tabel yang ada di supabase dan muncul di dashboard.    |
 
 ---
@@ -22,10 +23,17 @@ legacy_setup.sql - this is the sql code that need to import in supabase.      |
 
 | Field          | Your Entry |
 | -------------- | ---------- |
-| **Symptom**    |            |
-| **Hypothesis** |            |
-| **AI Prompt**  |            |
-| **Fix**        |            |
+| **Symptom**    |   • changing a shipment status shows a success toast notification
+  • However, after refreshing the page, the shipment status returns to its original value
+  •  Inspecting the shipments table in Supabase, it shows that no rows were updated |
+| **Hypothesis** |  • Supabase update query may not be executing correctly
+  • Server action may be returning success without waiting for database mutation to complete
+  • Update query may not bet targeting the row
+  • Database might reject update due to constraints or trigger|
+| **AI Prompt**  | Moving on to bug number 2, where the root cause is that the status does not change when updated on the server action. Please teach me how to debug and what needs to be done.
+Why is it necessary to add await for the change to occur, but when await is not added, the status does not change?
+|
+| **Fix**        |Added `await` to ensure the database mutation completes before the returning success|
 
 ---
 
