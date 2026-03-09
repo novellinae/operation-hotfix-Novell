@@ -51,6 +51,10 @@ export function DataTable<TData, TValue>({
   })
 
   useEffect(() => {
+    console.log("effect triggered", {
+      sorting,
+      searchParams: searchParams.toString()
+    })
     const params = new URLSearchParams(searchParams.toString())
     if (sorting.length > 0) {
       params.set('sort', sorting[0].id)
@@ -60,7 +64,7 @@ export function DataTable<TData, TValue>({
       params.delete('desc')
     }
     router.push(`/dashboard?${params.toString()}`)
-  }, [table.getState().sorting, searchParams, router])
+  }, [sorting])
 
   const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value
