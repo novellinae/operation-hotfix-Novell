@@ -44,8 +44,7 @@ export const columns: ColumnDef<Shipment>[] = [
     accessorKey: 'cargo_details',
     header: 'Cargo',
     cell: ({ row }) => {
-      const rawCargo = row.getValue<Shipment['cargo_details']>('cargo_details')
-      const cargo = normalizeCargoDetails(rawCargo)
+      const cargo = row.getValue<Shipment['cargo_details']>('cargo_details')
 
       console.log(row.getValue("cargo_details"))
       if (!cargo)
