@@ -52,10 +52,11 @@ Complete one entry per bug. All six entries are required for full marks.
 
 | Field | Entry |
 |------|------|
-| **Symptom** | |
-| **Hypothesis** | |
-| **AI Prompt** | |
-| **Fix** | |
+| **Symptom** | When QA uses the search box to filter shipments by cargo item name, the results sometimes do not match the entered query. For example, typing "Medical" may return all shipments, or typing "Electronics" may display "Medical Supplies". The issue occurs more frequently when the user types quickly or when the network is slow (e.g., throttled to 3G). In some cases, clearing the search input does not immediately restore the full dataset, and the table may temporarily display results from a previous query. |
+| **Hypothesis** | The search input triggers a server action for every keystroke, creating multiple asynchronous requests running at the same time. Under slow network conditions, these requests may complete out of order. When an older request finishes after a newer one, its response can overwrite the correct results in the table state. This results in inconsistent search results where the displayed rows do not match the current search input. |
+| **AI Prompt** | I am debugging a Next.js logistics dashboard using Supabase. When QA uses the search input to filter shipments by cargo item name, the results sometimes do not match the entered query. For example, typing "Medical" may return all shipments or show results for a different item. The issue becomes much more noticeable when the network connection is slow (for example when throttled to 3G in Chrome DevTools). The search functionality calls a server action on every keystroke. Could this behavior be caused by asynchronous requests completing out of order? Why would slower networks make the issue more visible, and what is the best way to ensure that only the most recent search query updates the table results? |
+| **Investigation** | The issue was reproduced by typing quickly in the search input while enabling network throttling (3G) in Chrome DevTools. The Network panel showed multiple requests being sent to the `/dashboard` route through the `searchShipments` server action. Because the search function was triggered on every keystroke, several requests were active simultaneously. Under slow network conditions, earlier requests sometimes finished after later ones, which caused outdated results to overwrite the correct table data. Additional testing also revealed that when the search input was cleared, previous responses could still update the table after the reset occurred. This confirmed that the root cause was a race condition between asynchronous search requests. |
+| **Fix** | Implemented a debounced search mechanism in the client component using a `useDebounce` hook so that the server action is only triggered after the user stops typing briefly. Additionally, a request guard using `useRef` was introduced to track the latest query and ignore outdated responses. This ensures that only the response corresponding to the most recent query updates the table state. When the search input is empty, the table is reset to the original dataset. |
 
 ---
 

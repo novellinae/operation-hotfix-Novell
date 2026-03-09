@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { useDebounce } from '@/hooks/useDebounce'
 import {
   ColumnDef,
   SortingState,
@@ -18,7 +19,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -35,6 +36,30 @@ export function DataTable<TData, TValue>({
   const [sorting, setSorting] = useState<SortingState>([])
   const [tableData, setTableData] = useState<TData[]>(data)
   const [loading, setLoading] = useState(false)
+  const [query, setQuery] = useState("")
+  const latestQueryRef = useRef("")
+
+  const debouncedQuery = useDebounce(query, 300)
+
+  useEffect(() => {
+    const runSearch = async () => {
+      const currentQuery = debouncedQuery // set lama waktu debouncenya
+      latestQueryRef.current = currentQuery //mengunci query yang digunakan untuk request tersebut
+      if(!currentQuery.trim()) {
+        setTableData(data) // kalo kosong return data awal yang full rows
+        setLoading(false)
+        return
+      }
+      setLoading(true)
+      const results = await searchShipments(currentQuery)  //server action buat searching
+      if(latestQueryRef.current === currentQuery){ //mengabaikan response lama jika false jadi response dan query harus sama (latestquery -> keadaan field saat ini, currentQuery -> responsenya)
+        setTableData(results as TData[])
+      }
+      setLoading(false)
+    }
+
+    runSearch()
+  }, [debouncedQuery,data]) //dependency data buat reset table biar ga ngaco
 
   useEffect(() => {
     setTableData(data)
@@ -64,14 +89,14 @@ export function DataTable<TData, TValue>({
       params.delete('desc')
     }
     router.push(`/dashboard?${params.toString()}`)
-  }, [sorting])
+  }, [sorting]) //kalo pakai search params sama router tiap render jadi keredirect terus jadi yang dipakai dependency sorting aja karena baru ketrigger pas mau sort aja
 
-  const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
+
+  // search harus dipanggil debounce effect aja -> bukan dari input handler, kalo dua duanya manggil search bakal muncul puluhan request
+  // maka handleSearch hanya mengupdate state saja
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => { //async tidak digunakan lagi karena sudah ada debounce tidak perlu menunggu process query selesai karena ketika
     const query = e.target.value
-    setLoading(true)
-    const results = await searchShipments(query)
-    setTableData(results as TData[])
-    setLoading(false)
+    setQuery(query)
   }
 
   return (

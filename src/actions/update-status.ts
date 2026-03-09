@@ -12,12 +12,12 @@ export async function updateShipmentStatus(id: string, status: string) {
   .select() // menampilkan hasil update
   .single() // retun single data
 
+  
+  revalidatePath('/dashboard')
+  // TODO: surface errors to caller
   if(error) {
     throw new Error(error.message)
   }
-
-  revalidatePath('/dashboard')
-  // TODO: surface errors to caller
   return { success: true }
 }
 
