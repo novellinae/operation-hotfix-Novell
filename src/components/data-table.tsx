@@ -89,7 +89,13 @@ export function DataTable<TData, TValue>({
       params.delete('desc')
     }
     router.push(`/dashboard?${params.toString()}`)
-  }, [sorting]) //kalo pakai search params sama router tiap render jadi keredirect terus jadi yang dipakai dependency sorting aja karena baru ketrigger pas mau sort aja
+  }, [sorting]) 
+
+  // hanya bergantung pada dependency sorting aja buat menghindari infinite navigation loop -> trigger cuman pas ngelakuin sorting baru dia update url
+  // sedangkan sebelumnya kita ada pakai searchParams as dependency dimana useSearchParams nya return object reference baru setiap render
+  // Ketika router push update url -> component rerender (dependency yang bikin rerender)
+  // karena urlnya berubah maka hal ini menciptakan searchParams object yang baru dimana ini jadinya ngetrigger useEffect lagi buat manggil function pas component beres render
+  // sehingga muncul infinite navigation loop, maka opsi terbaiknya hanya pakai sorting karena effect cuman jalan kalo user ganti sorting state
 
 
   // search harus dipanggil debounce effect aja -> bukan dari input handler, kalo dua duanya manggil search bakal muncul puluhan request
