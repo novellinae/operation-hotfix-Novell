@@ -32,7 +32,10 @@ export const columns: ColumnDef<Shipment>[] = [
     header: 'Created',
     cell: ({ row }) => {
       const date = new Date(row.getValue<string>('created_at'))
-      return <span className='text-sm'>{date.toLocaleDateString()}</span>
+
+      const formatter = new Intl.DateTimeFormat("en-GB")
+
+      return <span className='text-sm'>{(formatter.format(date))}</span>
     },
   },
   {

@@ -34,7 +34,7 @@ export function DataTable<TData, TValue>({
   const router = useRouter()
   const searchParams = useSearchParams()
   const [sorting, setSorting] = useState<SortingState>([])
-  const [tableData, setTableData] = useState<TData[]>(data)
+  const [tableData, setTableData] = useState<TData[]>(()=> data) // memastikan initial state sama dengan server render.
   const [loading, setLoading] = useState(false)
   const [query, setQuery] = useState("")
   const latestQueryRef = useRef("")
